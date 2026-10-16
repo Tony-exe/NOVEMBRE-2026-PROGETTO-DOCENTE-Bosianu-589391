@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Film · ' + ${festival.nome})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/festivals}">Festival</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/festivals/{id}(id=${festival.id})}" th:text="${festival.nome}">Festival</a></li>
+            <li class="breadcrumb-item active">Film</li>
+        </ol>
+    </nav>
+
+    <h1 class="h3 mb-4">Film partecipanti</h1>
+    <p th:if="${#lists.isEmpty(films)}" class="text-muted">Nessun film associato a questo festival.</p>
+
+    <div class="row g-3">
+        <div class="col-md-6 col-lg-4" th:each="film : ${films}">
+            <div class="card h-100 card-festival">
+                <div class="card-body">
+                    <h2 class="h5 card-title" th:text="${film.titolo}">Titolo</h2>
+                    <!-- film.regista è già inizializzato (JOIN FETCH nel repository): niente LazyInitializationException -->
+                    <p class="card-subtitle text-muted mb-2">
+                        di <span th:text="${film.regista.nome + ' ' + film.regista.cognome}">Regista</span>
+                    </p>
+                    <p class="card-text small mb-0">
+                        <span th:text="${film.anno}">1972</span> · <span th:text="${film.genere}">Genere</span> ·
+                        <span th:text="${film.durata}">120</span> min · <span th:text="${film.paeseProduzione}">Paese</span>
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <!-- Il dettaglio film (con le recensioni) è una pagina React -->
+                    <a th:href="@{/app/movies/{id}(id=${film.id})}" class="btn btn-sm btn-primary">Dettaglio e recensioni</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -5,6 +5,8 @@ import java.time.LocalTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import it.uniroma3.siw.festival.model.Proiezione;
+
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -25,8 +27,18 @@ public class ProiezioneForm {
     private LocalDate data;
 
     @NotNull
-    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+    @DateTimeFormat(pattern = "HH:mm") // formato inviato da <input type="time">
     private LocalTime ora;
+
+    /** Precompila il form di modifica (la proiezione deve avere film e sala già caricati). */
+    public static ProiezioneForm da(Proiezione proiezione) {
+        ProiezioneForm form = new ProiezioneForm();
+        form.setFilmId(proiezione.getFilm().getId());
+        form.setSalaId(proiezione.getSala().getId());
+        form.setData(proiezione.getData());
+        form.setOra(proiezione.getOra());
+        return form;
+    }
 
     public Long getFilmId() {
         return filmId;

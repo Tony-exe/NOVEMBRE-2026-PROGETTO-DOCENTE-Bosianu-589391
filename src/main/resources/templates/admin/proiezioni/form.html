@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Modifica proiezione')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" style="max-width: 640px">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/admin/festivals}">Festival</a></li>
+            <li class="breadcrumb-item">
+                <a th:href="@{/admin/festivals/{id}/proiezioni(id=${proiezione.festival.id})}"
+                   th:text="${proiezione.festival.nome}">Festival</a></li>
+            <li class="breadcrumb-item active">Modifica proiezione</li>
+        </ol>
+    </nav>
+    <h1 class="h3">Modifica proiezione</h1>
+    <p class="text-muted">
+        <strong th:text="${proiezione.film.titolo}">Film</strong>
+        (<span th:text="${proiezione.film.durata}">120</span> min). Si possono cambiare sala, data e ora.
+    </p>
+
+    <form th:action="@{/admin/proiezioni/{id}(id=${proiezione.id})}" th:object="${form}" method="post"
+          class="card card-body" novalidate>
+        <div th:replace="~{fragments/layout :: erroriGlobali}"></div>
+        <!-- il film non cambia, ma il campo è obbligatorio nel form -->
+        <input type="hidden" th:field="*{filmId}">
+
+        <!-- Select della sala, riusata anche dal form di programmazione -->
+        <div th:fragment="selectSala" class="mb-3">
+            <label for="salaId" class="form-label">Sala</label>
+            <select th:field="*{salaId}" class="form-select"
+                    th:classappend="${#fields.hasErrors('salaId')} ? 'is-invalid'">
+                <option value="">— scegli la sala —</option>
+                <option th:each="sala : ${sale}" th:value="${sala.id}"
+                        th:text="${sala.nome + ' (' + sala.capienza + ' posti)'}">Sala</option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{salaId}"></div>
+        </div>
+        <div th:replace="~{fragments/layout :: campo('data', 'Data', 'date')}"></div>
+        <div th:replace="~{fragments/layout :: campo('ora', 'Ora di inizio', 'time')}"></div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salva</button>
+            <a th:href="@{/admin/festivals/{id}/proiezioni(id=${proiezione.festival.id})}"
+               class="btn btn-outline-secondary">Annulla</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

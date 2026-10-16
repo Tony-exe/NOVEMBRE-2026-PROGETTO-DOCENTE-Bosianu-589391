@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Gestione festival')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 m-0">Festival</h1>
+        <a th:href="@{/admin/festivals/new}" class="btn btn-primary">Nuovo festival</a>
+    </div>
+
+    <div class="table-responsive">
+    <table class="table table-hover bg-white border">
+        <thead class="table-light">
+        <tr><th>Nome</th><th>Città</th><th>Periodo</th><th class="text-end">Azioni</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="festival : ${festivals}">
+            <td th:text="${festival.nome}">Nome</td>
+            <td th:text="${festival.citta}">Città</td>
+            <td>
+                <span th:text="${#temporals.format(festival.dataInizio, 'dd/MM/yyyy')}">01/01</span> –
+                <span th:text="${#temporals.format(festival.dataFine, 'dd/MM/yyyy')}">10/01</span>
+            </td>
+            <td class="text-end azioni">
+                <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-sm btn-outline-secondary">Modifica</a>
+                <a th:href="@{/admin/festivals/{id}/films(id=${festival.id})}" class="btn btn-sm btn-outline-secondary">Film</a>
+                <a th:href="@{/admin/festivals/{id}/proiezioni(id=${festival.id})}" class="btn btn-sm btn-outline-primary">Proiezioni</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

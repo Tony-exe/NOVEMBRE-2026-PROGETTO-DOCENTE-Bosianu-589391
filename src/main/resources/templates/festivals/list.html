@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Festival')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-4">Festival</h1>
+
+    <!-- Frammento riusato anche dalla home -->
+    <div th:fragment="cards" class="row g-3">
+        <p th:if="${#lists.isEmpty(festivals)}" class="text-muted">Nessun festival in programma.</p>
+        <div class="col-md-6 col-lg-4" th:each="festival : ${festivals}">
+            <div class="card h-100 card-festival">
+                <div class="card-body">
+                    <h2 class="h5 card-title" th:text="${festival.nome}">Nome festival</h2>
+                    <p class="card-subtitle text-muted mb-2">
+                        <span th:text="${festival.citta}">Città</span> ·
+                        <span th:text="${#temporals.format(festival.dataInizio, 'dd/MM/yyyy')}">01/01</span> –
+                        <span th:text="${#temporals.format(festival.dataFine, 'dd/MM/yyyy')}">10/01</span>
+                    </p>
+                    <p class="card-text small" th:text="${festival.descrizione}">Descrizione</p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a th:href="@{/festivals/{id}(id=${festival.id})}" class="btn btn-sm btn-primary">Dettagli</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(${festival.nome})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/festivals}">Festival</a></li>
+            <li class="breadcrumb-item active" th:text="${festival.nome}">Festival</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white border rounded-3 p-4">
+        <h1 class="h3" th:text="${festival.nome}">Nome festival</h1>
+        <p class="text-muted">
+            <span th:text="${festival.citta}">Città</span> · edizione <span th:text="${festival.anno}">2026</span> ·
+            dal <span th:text="${#temporals.format(festival.dataInizio, 'dd/MM/yyyy')}">01/01</span>
+            al <span th:text="${#temporals.format(festival.dataFine, 'dd/MM/yyyy')}">10/01</span>
+        </p>
+        <p th:text="${festival.descrizione}">Descrizione</p>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a th:href="@{/festivals/{id}/films(id=${festival.id})}" class="btn btn-primary">Film partecipanti</a>
+            <!-- Pagina React (stessa applicazione, stessa sessione) -->
+            <a th:href="@{/app/festivals/{id}/screenings(id=${festival.id})}" class="btn btn-outline-primary">
+                Programma delle proiezioni</a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/festivals/{id}/proiezioni(id=${festival.id})}"
+               class="btn btn-outline-secondary">Gestisci programmazione</a>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

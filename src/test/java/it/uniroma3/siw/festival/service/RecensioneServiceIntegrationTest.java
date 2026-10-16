@@ -27,6 +27,7 @@ import it.uniroma3.siw.festival.model.Regista;
 import it.uniroma3.siw.festival.repository.FilmRepository;
 import it.uniroma3.siw.festival.repository.RecensioneRepository;
 import it.uniroma3.siw.festival.repository.RegistaRepository;
+import it.uniroma3.siw.festival.support.DatabaseCleaner;
 import it.uniroma3.siw.festival.repository.UtenteRepository;
 
 /**

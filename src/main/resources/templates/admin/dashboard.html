@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Gestione')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-4">Pannello di gestione</h1>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a th:href="@{/admin/festivals}" class="card card-body card-festival text-decoration-none h-100">
+                <h2 class="h5">Festival e proiezioni</h2>
+                <p class="text-muted mb-0">Crea e modifica festival, associa i film, programma le proiezioni.</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/admin/films}" class="card card-body card-festival text-decoration-none h-100">
+                <h2 class="h5">Film e cast</h2>
+                <p class="text-muted mb-0">Inserisci e modifica film, regista e interpretazioni.</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/admin/sale}" class="card card-body card-festival text-decoration-none h-100">
+                <h2 class="h5">Sale</h2>
+                <p class="text-muted mb-0">Le sale in cui si svolgono le proiezioni.</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/admin/registi}" class="card card-body card-festival text-decoration-none h-100">
+                <h2 class="h5">Registi</h2>
+                <p class="text-muted mb-0">Anagrafica dei registi.</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/admin/attori}" class="card card-body card-festival text-decoration-none h-100">
+                <h2 class="h5">Attori</h2>
+                <p class="text-muted mb-0">Anagrafica degli attori.</p>
+            </a>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

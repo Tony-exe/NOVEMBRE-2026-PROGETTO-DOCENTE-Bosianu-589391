@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${titolo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <!-- Template condiviso da registi e attori: "base" è /admin/registi oppure /admin/attori -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 m-0" th:text="${titolo}">Persone</h1>
+        <a th:href="@{__${base}__/new}" class="btn btn-primary">Nuovo</a>
+    </div>
+
+    <div class="table-responsive">
+    <table class="table table-hover bg-white border">
+        <thead class="table-light">
+        <tr><th>Cognome e nome</th><th>Data di nascita</th><th>Nazionalità</th><th class="text-end">Azioni</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="persona : ${persone}">
+            <td th:text="${persona.cognome + ' ' + persona.nome}">Cognome Nome</td>
+            <td th:text="${#temporals.format(persona.dataNascita, 'dd/MM/yyyy')}">01/01/1970</td>
+            <td th:text="${persona.nazionalita}">Italiana</td>
+            <td class="text-end">
+                <a th:href="@{__${base}__/{id}/edit(id=${persona.id})}" class="btn btn-sm btn-outline-secondary">Modifica</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cast · ' + ${film.titolo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/admin/films}">Film</a></li>
+            <li class="breadcrumb-item active" th:text="${film.titolo}">Film</li>
+        </ol>
+    </nav>
+    <h1 class="h3">Cast di <span th:text="${film.titolo}">Film</span></h1>
+    <p class="text-muted">Regia di <span th:text="${film.regista.nome + ' ' + film.regista.cognome}">Regista</span></p>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="table-responsive">
+            <table class="table bg-white border">
+                <thead class="table-light"><tr><th>Attore</th><th>Personaggio</th><th></th></tr></thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(film.interpretazioni)}">
+                    <td colspan="3" class="text-muted">Nessun attore nel cast.</td>
+                </tr>
+                <tr th:each="interpretazione : ${film.interpretazioni}">
+                    <td th:text="${interpretazione.attore.nome + ' ' + interpretazione.attore.cognome}">Attore</td>
+                    <td th:text="${interpretazione.personaggio}">Personaggio</td>
+                    <td class="text-end azioni">
+                        <form th:action="@{/admin/films/{id}/cast/{iid}/remove(id=${film.id}, iid=${interpretazione.id})}"
+                              method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Rimuovi</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <form th:action="@{/admin/films/{id}/cast(id=${film.id})}" th:object="${castForm}" method="post"
+                  class="card card-body" novalidate>
+                <h2 class="h5">Aggiungi al cast</h2>
+                <div th:replace="~{fragments/layout :: erroriGlobali}"></div>
+                <div class="mb-3">
+                    <label for="attoreId" class="form-label">Attore</label>
+                    <select th:field="*{attoreId}" class="form-select"
+                            th:classappend="${#fields.hasErrors('attoreId')} ? 'is-invalid'">
+                        <option value="">— scegli l'attore —</option>
+                        <option th:each="attore : ${attori}" th:value="${attore.id}"
+                                th:text="${attore.cognome + ' ' + attore.nome}">Attore</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{attoreId}"></div>
+                    <div class="form-text">Non c'è? <a th:href="@{/admin/attori/new}">Inserisci un nuovo attore</a>.</div>
+                </div>
+                <div th:replace="~{fragments/layout :: campo('personaggio', 'Personaggio', 'text')}"></div>
+                <button type="submit" class="btn btn-primary">Aggiungi</button>
+            </form>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${festivalId} == null ? 'Nuovo festival' : 'Modifica festival')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" style="max-width: 720px">
+    <h1 class="h3 mb-4" th:text="${festivalId} == null ? 'Nuovo festival' : 'Modifica festival'">Festival</h1>
+
+    <!-- Stesso template per inserimento e modifica: cambia solo l'URL del POST -->
+    <form th:action="${festivalId} == null ? @{/admin/festivals} : @{/admin/festivals/{id}(id=${festivalId})}"
+          th:object="${form}" method="post" class="card card-body" novalidate>
+        <div th:replace="~{fragments/layout :: erroriGlobali}"></div>
+
+        <div th:replace="~{fragments/layout :: campo('nome', 'Nome', 'text')}"></div>
+        <div class="row">
+            <div class="col-md-6" th:insert="~{fragments/layout :: campo('citta', 'Città', 'text')}"></div>
+            <div class="col-md-6" th:insert="~{fragments/layout :: campo('anno', 'Anno (edizione)', 'number')}"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6" th:insert="~{fragments/layout :: campo('dataInizio', 'Data di inizio', 'date')}"></div>
+            <!-- l'errore di @PeriodoValido è associato a dataFine, quindi compare qui -->
+            <div class="col-md-6" th:insert="~{fragments/layout :: campo('dataFine', 'Data di fine', 'date')}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="descrizione" class="form-label">Descrizione</label>
+            <textarea th:field="*{descrizione}" rows="4" class="form-control"
+                      th:classappend="${#fields.hasErrors('descrizione')} ? 'is-invalid'"></textarea>
+            <div class="invalid-feedback" th:errors="*{descrizione}"></div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salva</button>
+            <a th:href="@{/admin/festivals}" class="btn btn-outline-secondary">Annulla</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -63,6 +63,14 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
             """)
     Page<Film> cerca(String titolo, String genere, String regista, Pageable pageable);
 
+    // Film che si possono ancora associare al festival (quelli che non vi partecipano), con regista
+    @Query("""
+            select f from Film f join fetch f.regista
+            where f.id not in (select fi.id from Festival fe join fe.films fi where fe.id = :festivalId)
+            order by f.titolo
+            """)
+    List<Film> findNonPartecipantiAlFestival(Long festivalId);
+
     // Elenco admin: mostra anche il regista, quindi lo carico subito (altrimenti N+1)
     @Query("select f from Film f join fetch f.regista order by f.titolo")
     List<Film> findAllWithRegista();

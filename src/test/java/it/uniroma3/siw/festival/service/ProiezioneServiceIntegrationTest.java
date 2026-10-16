@@ -37,6 +37,7 @@ import it.uniroma3.siw.festival.repository.FestivalRepository;
 import it.uniroma3.siw.festival.repository.FilmRepository;
 import it.uniroma3.siw.festival.repository.ProiezioneRepository;
 import it.uniroma3.siw.festival.repository.RegistaRepository;
+import it.uniroma3.siw.festival.support.DatabaseCleaner;
 import it.uniroma3.siw.festival.repository.SalaRepository;
 
 /**

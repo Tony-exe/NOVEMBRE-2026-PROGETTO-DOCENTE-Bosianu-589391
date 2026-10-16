@@ -1,0 +1,22 @@
+/* Piccoli ritocchi a Bootstrap, condivisi da pagine Thymeleaf e React */
+body {
+    background-color: #f7f7f9;
+}
+
+.card-festival {
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card-festival:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+/* I form di azione (POST) dentro le tabelle restano sulla stessa riga dei link */
+.azioni form {
+    display: inline;
+}

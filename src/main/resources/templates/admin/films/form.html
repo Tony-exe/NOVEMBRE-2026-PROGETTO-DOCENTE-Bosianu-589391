@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${filmId} == null ? 'Nuovo film' : 'Modifica film')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container" style="max-width: 720px">
+    <h1 class="h3 mb-4" th:text="${filmId} == null ? 'Nuovo film' : 'Modifica film'">Film</h1>
+
+    <form th:action="${filmId} == null ? @{/admin/films} : @{/admin/films/{id}(id=${filmId})}"
+          th:object="${form}" method="post" class="card card-body" novalidate>
+        <div th:replace="~{fragments/layout :: erroriGlobali}"></div>
+
+        <div th:replace="~{fragments/layout :: campo('titolo', 'Titolo', 'text')}"></div>
+        <div class="row">
+            <div class="col-md-4" th:insert="~{fragments/layout :: campo('anno', 'Anno', 'number')}"></div>
+            <div class="col-md-4" th:insert="~{fragments/layout :: campo('durata', 'Durata (minuti)', 'number')}"></div>
+            <div class="col-md-4" th:insert="~{fragments/layout :: campo('genere', 'Genere', 'text')}"></div>
+        </div>
+        <div th:replace="~{fragments/layout :: campo('paeseProduzione', 'Paese di produzione', 'text')}"></div>
+
+        <div class="mb-3">
+            <label for="registaId" class="form-label">Regista</label>
+            <select th:field="*{registaId}" class="form-select"
+                    th:classappend="${#fields.hasErrors('registaId')} ? 'is-invalid'">
+                <option value="">— scegli il regista —</option>
+                <option th:each="regista : ${registi}" th:value="${regista.id}"
+                        th:text="${regista.cognome + ' ' + regista.nome}">Regista</option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{registaId}"></div>
+            <div class="form-text">Non c'è? <a th:href="@{/admin/registi/new}">Inserisci un nuovo regista</a>.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salva</button>
+            <a th:href="@{/admin/films}" class="btn btn-outline-secondary">Annulla</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

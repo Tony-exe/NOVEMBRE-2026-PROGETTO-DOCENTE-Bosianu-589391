@@ -69,6 +69,14 @@ public class FilmService {
         return filmRepository.findByFestivalIdWithRegista(festivalId);
     }
 
+    /** Film che l'amministratore può ancora aggiungere al festival. */
+    public List<Film> filmAssociabili(Long festivalId) {
+        if (!festivalRepository.existsById(festivalId)) {
+            throw new EntityNotFoundException("Festival", festivalId);
+        }
+        return filmRepository.findNonPartecipantiAlFestival(festivalId);
+    }
+
     /** Film con regista e cast (per la gestione del cast e il form di modifica). */
     public Film trovaConCast(Long id) {
         return filmRepository.findByIdWithRegistaAndCast(id)

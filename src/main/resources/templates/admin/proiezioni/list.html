@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Proiezioni · ' + ${festival.nome})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/admin/festivals}">Festival</a></li>
+            <li class="breadcrumb-item active" th:text="${festival.nome}">Festival</li>
+        </ol>
+    </nav>
+    <h1 class="h3">Proiezioni</h1>
+    <p class="text-muted">
+        Periodo del festival:
+        <span th:text="${#temporals.format(festival.dataInizio, 'dd/MM/yyyy')}">01/01</span> –
+        <span th:text="${#temporals.format(festival.dataFine, 'dd/MM/yyyy')}">10/01</span>
+    </p>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="table-responsive">
+            <table class="table bg-white border">
+                <thead class="table-light">
+                <tr><th>Data</th><th>Orario</th><th>Film</th><th>Sala</th><th>Stato</th><th class="text-end">Azioni</th></tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(proiezioni)}"><td colspan="6" class="text-muted">Nessuna proiezione.</td></tr>
+                <!-- film e sala sono già caricati (JOIN FETCH in ProiezioneRepository.findProgramma) -->
+                <tr th:each="p : ${proiezioni}" th:classappend="${p.stato.name() == 'CANCELLED'} ? 'text-muted'">
+                    <td th:text="${#temporals.format(p.data, 'EEE dd/MM')}">lun 01/01</td>
+                    <td th:text="${#temporals.format(p.ora, 'HH:mm') + '–' + #temporals.format(p.oraFine, 'HH:mm')}">14:00–16:00</td>
+                    <td th:text="${p.film.titolo}">Film</td>
+                    <td th:text="${p.sala.nome}">Sala</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${p.stato.name() == 'SCHEDULED'} ? 'text-bg-primary' : (${p.stato.name() == 'COMPLETED'} ? 'text-bg-success' : 'text-bg-secondary')"
+                              th:text="${p.stato}">SCHEDULED</span>
+                    </td>
+                    <td class="text-end azioni">
+                        <th:block th:if="${p.modificabile}">
+                            <a th:href="@{/admin/proiezioni/{id}/edit(id=${p.id})}" class="btn btn-sm btn-outline-secondary">Modifica</a>
+                            <form th:action="@{/admin/proiezioni/{id}/completa(id=${p.id})}" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Completata</button>
+                            </form>
+                            <form th:action="@{/admin/proiezioni/{id}/annulla(id=${p.id})}" method="post"
+                                  onsubmit="return confirm('Annullare la proiezione?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Annulla</button>
+                            </form>
+                        </th:block>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <form th:action="@{/admin/festivals/{id}/proiezioni(id=${festival.id})}" th:object="${form}" method="post"
+                  class="card card-body" novalidate>
+                <h2 class="h5">Programma una proiezione</h2>
+                <div th:replace="~{fragments/layout :: erroriGlobali}"></div>
+
+                <div class="mb-3">
+                    <label for="filmId" class="form-label">Film</label>
+                    <select th:field="*{filmId}" class="form-select"
+                            th:classappend="${#fields.hasErrors('filmId')} ? 'is-invalid'">
+                        <option value="">— scegli il film —</option>
+                        <option th:each="film : ${films}" th:value="${film.id}"
+                                th:text="${film.titolo + ' (' + film.durata + ' min)'}">Film</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{filmId}"></div>
+                    <div class="form-text" th:if="${#lists.isEmpty(films)}">
+                        Prima <a th:href="@{/admin/festivals/{id}/films(id=${festival.id})}">associa dei film</a> al festival.
+                    </div>
+                </div>
+                <div th:replace="~{admin/proiezioni/form :: selectSala}"></div>
+                <div th:replace="~{fragments/layout :: campo('data', 'Data', 'date')}"></div>
+                <div th:replace="~{fragments/layout :: campo('ora', 'Ora di inizio', 'time')}"></div>
+                <button type="submit" class="btn btn-primary">Programma</button>
+            </form>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

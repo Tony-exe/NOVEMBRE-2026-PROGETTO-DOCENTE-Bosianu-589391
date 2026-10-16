@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Film · ' + ${festival.nome})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/admin/festivals}">Festival</a></li>
+            <li class="breadcrumb-item active" th:text="${festival.nome}">Festival</li>
+        </ol>
+    </nav>
+    <h1 class="h3 mb-3">Film partecipanti</h1>
+
+    <form th:action="@{/admin/festivals/{id}/films(id=${festival.id})}" method="post" class="row g-2 mb-4"
+          th:if="${!#lists.isEmpty(associabili)}">
+        <div class="col-md-8">
+            <label for="filmId" class="visually-hidden">Film da aggiungere</label>
+            <select id="filmId" name="filmId" class="form-select" required>
+                <option th:each="film : ${associabili}" th:value="${film.id}"
+                        th:text="${film.titolo + ' (' + film.anno + ') – ' + film.regista.cognome}">Film</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Aggiungi al festival</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+    <table class="table bg-white border">
+        <thead class="table-light">
+        <tr><th>Titolo</th><th>Regista</th><th>Anno</th><th class="text-end">Azioni</th></tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(films)}"><td colspan="4" class="text-muted">Nessun film associato.</td></tr>
+        <tr th:each="film : ${films}">
+            <td th:text="${film.titolo}">Titolo</td>
+            <td th:text="${film.regista.nome + ' ' + film.regista.cognome}">Regista</td>
+            <td th:text="${film.anno}">Anno</td>
+            <td class="text-end azioni">
+                <!-- POST (non un link GET): un'azione che modifica i dati richiede il token CSRF -->
+                <form th:action="@{/admin/festivals/{id}/films/{filmId}/remove(id=${festival.id}, filmId=${film.id})}"
+                      method="post" onsubmit="return confirm('Rimuovere il film? Le sue proiezioni programmate in questo festival saranno annullate.')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Rimuovi</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
