@@ -63,5 +63,7 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
             """)
     Page<Film> cerca(String titolo, String genere, String regista, Pageable pageable);
 
-    List<Film> findAllByOrderByTitoloAsc();
+    // Elenco admin: mostra anche il regista, quindi lo carico subito (altrimenti N+1)
+    @Query("select f from Film f join fetch f.regista order by f.titolo")
+    List<Film> findAllWithRegista();
 }
