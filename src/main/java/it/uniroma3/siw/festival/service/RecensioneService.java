@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,15 @@ import it.uniroma3.siw.festival.repository.UtenteRepository;
 @Service
 @Transactional(readOnly = true)
 public class RecensioneService {
+
+    /*
+     * Sicurezza a livello di metodo: serve un utente registrato E lo username passato al metodo
+     * (#username) deve essere quello dell'utente autenticato. Così nessun chiamante può agire
+     * "a nome di" un altro. La proprietà della singola recensione si verifica invece nel codice
+     * (trovaPropria), perché richiede di leggere l'autore dal database.
+     */
+    private static final String UTENTE_AUTENTICATO =
+            "hasAnyRole('USER', 'ADMIN') and #username == authentication.name";
 
     private final RecensioneRepository recensioneRepository;
     private final FilmRepository filmRepository;
@@ -48,6 +58,7 @@ public class RecensioneService {
         return recensioneRepository.mediaVoti(filmId);
     }
 
+    @PreAuthorize(UTENTE_AUTENTICATO)
     @Transactional
     public Recensione crea(Long filmId, String username, RecensioneForm form) {
         Film film = filmRepository.findById(filmId)
@@ -68,6 +79,7 @@ public class RecensioneService {
         }
     }
 
+    @PreAuthorize(UTENTE_AUTENTICATO)
     @Transactional
     public Recensione modifica(Long recensioneId, String username, RecensioneForm form) {
         Recensione recensione = trovaPropria(recensioneId, username);
@@ -77,6 +89,7 @@ public class RecensioneService {
         return recensione;
     }
 
+    @PreAuthorize(UTENTE_AUTENTICATO)
     @Transactional
     public void elimina(Long recensioneId, String username) {
         Recensione recensione = trovaPropria(recensioneId, username);

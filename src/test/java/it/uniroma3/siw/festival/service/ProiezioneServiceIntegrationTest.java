@@ -20,6 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.concurrent.DelegatingSecurityContextExecutorService;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -41,6 +44,7 @@ import it.uniroma3.siw.festival.repository.SalaRepository;
  * La classe NON è @Transactional, così ogni chiamata al service apre e chiude la propria transazione.
  */
 @SpringBootTest
+@WithMockUser(roles = "ADMIN") // i metodi di scrittura del service richiedono il ruolo ADMIN (@PreAuthorize)
 @ActiveProfiles("test")
 class ProiezioneServiceIntegrationTest {
 
@@ -136,7 +140,8 @@ class ProiezioneServiceIntegrationTest {
             return proiezioneService.programmaProiezione(festivalId, filmId, salaId, giorno, LocalTime.of(14, 0));
         };
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        // Il SecurityContext è legato al thread: il wrapper lo copia nei thread del pool
+        ExecutorService executor = new DelegatingSecurityContextExecutorService(Executors.newFixedThreadPool(2));
         List<Future<Proiezione>> risultati = new ArrayList<>();
         risultati.add(executor.submit(programma));
         risultati.add(executor.submit(programma));
@@ -183,6 +188,14 @@ class ProiezioneServiceIntegrationTest {
                 .isEqualTo(StatoProiezione.CANCELLED);
         assertThat(proiezioneRepository.findById(svoltaId).orElseThrow().getStato())
                 .isEqualTo(StatoProiezione.COMPLETED);
+    }
+
+    @Test
+    @WithMockUser(roles = "USER") // sovrascrive l'annotazione di classe
+    void unUtenteNonAdminNonPuoProgrammare() {
+        assertThatThrownBy(() -> proiezioneService.programmaProiezione(festivalId, filmId, salaId, giorno,
+                LocalTime.of(14, 0))).isInstanceOf(AccessDeniedException.class);
+        assertThat(proiezioneRepository.count()).isZero();
     }
 
     @Test

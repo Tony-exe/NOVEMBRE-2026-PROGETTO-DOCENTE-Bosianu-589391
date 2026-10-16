@@ -20,7 +20,7 @@
     <properties>
         <java.version>21</java.version>
         <!-- Il JDK installato è più recente di Java 21: ByteBuddy (usato da Hibernate per i proxy LAZY
-             e da Mockito) va abilitato in modalità "experimental" per riconoscerlo. Vedi DECISIONI.md. -->
+             e da Mockito) va abilitato in modalità "experimental" per riconoscerlo. -->
         <bytebuddy.flag>-Dnet.bytebuddy.experimental=true</bytebuddy.flag>
     </properties>
 
@@ -41,10 +41,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-        <!-- Solo BCrypt per ora: lo starter Spring Security completo arriva nella fase 3 -->
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- Dialetto sec:* per Thymeleaf (sec:authorize, sec:authentication) -->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -55,6 +59,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

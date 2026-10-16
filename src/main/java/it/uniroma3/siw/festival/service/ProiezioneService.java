@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,8 +67,9 @@ public class ProiezioneService {
      * la seconda transazione aspetta che la prima finisca e, poiché in READ_COMMITTED ogni query vede
      * i dati confermati fino a quel momento, la sua verifica trova la proiezione appena inserita.
      * Alternativa: Isolation.SERIALIZABLE senza lock, con retry quando PostgreSQL annulla una delle due
-     * transazioni per errore di serializzazione (vedi DECISIONI.md).
+     * transazioni per errore di serializzazione (SQLState 40001), da ripetere con un retry.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Proiezione programmaProiezione(Long festivalId, Long filmId, Long salaId, LocalDate data, LocalTime ora) {
         // 1. recupero festival e film (404 se mancano)
@@ -101,6 +103,7 @@ public class ProiezioneService {
     }
 
     /** Sposta una proiezione programmata (sala, data e ora). Stessi controlli della programmazione. */
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Proiezione modificaProiezione(Long id, Long salaId, LocalDate data, LocalTime ora) {
         Proiezione proiezione = trova(id);
@@ -119,6 +122,7 @@ public class ProiezioneService {
     }
 
     /** Cancellazione di una proiezione = passaggio allo stato CANCELLED (si conserva lo storico). */
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void annulla(Long id) {
         Proiezione proiezione = trova(id);
@@ -127,6 +131,7 @@ public class ProiezioneService {
     }
 
     /** Segna come svolta una proiezione già iniziata. */
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void segnaCompletata(Long id) {
         Proiezione proiezione = trova(id);

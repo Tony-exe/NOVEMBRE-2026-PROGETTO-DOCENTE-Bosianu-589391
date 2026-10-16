@@ -2,6 +2,7 @@ package it.uniroma3.siw.festival.service;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,8 @@ import it.uniroma3.siw.festival.repository.ProiezioneRepository;
  * Default di classe: tutte le operazioni sono di sola lettura. readOnly = true dice a Hibernate
  * di non fare dirty checking né flush (meno lavoro) e documenta che il metodo non scrive.
  * I metodi che scrivono sovrascrivono l'annotazione con @Transactional "pieno".
+ * @PreAuthorize sui metodi di scrittura: secondo livello di sicurezza, oltre alla regola /admin/**
+ * della SecurityFilterChain (se manca il ruolo, il proxy lancia AccessDeniedException prima del metodo).
  */
 @Service
 @Transactional(readOnly = true)
@@ -51,6 +54,7 @@ public class FestivalService {
                 .orElseThrow(() -> new EntityNotFoundException("Festival", id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public Festival crea(FestivalForm form) {
         verificaPeriodo(form);
@@ -59,6 +63,7 @@ public class FestivalService {
         return festivalRepository.save(festival);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public Festival modifica(Long id, FestivalForm form) {
         verificaPeriodo(form);
@@ -72,6 +77,7 @@ public class FestivalService {
         return festival;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void aggiungiFilm(Long festivalId, Long filmId) {
         Festival festival = trovaConFilm(festivalId);
@@ -93,6 +99,7 @@ public class FestivalService {
      *
      * @return il numero di proiezioni annullate
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public int rimuoviFilm(Long festivalId, Long filmId) {
         Festival festival = trovaConFilm(festivalId);

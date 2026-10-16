@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,6 +90,7 @@ public class FilmService {
                 recensioneRepository.mediaVoti(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public Film crea(FilmForm form) {
         Film film = new Film();
@@ -96,6 +98,7 @@ public class FilmService {
         return filmRepository.save(film);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public Film modifica(Long id, FilmForm form) {
         Film film = trovaConCast(id);
@@ -110,6 +113,7 @@ public class FilmService {
         return film;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void aggiungiInterpretazione(Long filmId, Long attoreId, String personaggio) {
         Film film = trovaConCast(filmId);
@@ -128,6 +132,7 @@ public class FilmService {
         film.addInterpretazione(attore, nome);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void rimuoviInterpretazione(Long filmId, Long interpretazioneId) {
         Film film = trovaConCast(filmId);

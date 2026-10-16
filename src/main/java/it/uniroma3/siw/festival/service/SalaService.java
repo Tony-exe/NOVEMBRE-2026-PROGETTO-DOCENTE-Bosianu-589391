@@ -2,6 +2,7 @@ package it.uniroma3.siw.festival.service;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class SalaService {
                 .orElseThrow(() -> new EntityNotFoundException("Sala", id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public Sala crea(SalaForm form) {
         Sala sala = new Sala();
@@ -36,6 +38,7 @@ public class SalaService {
         return salaRepository.save(sala);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public Sala modifica(Long id, SalaForm form) {
         Sala sala = trova(id);
