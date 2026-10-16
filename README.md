@@ -6,7 +6,8 @@ Spring Boot 3.5 · JPA/Hibernate · PostgreSQL · Thymeleaf · React.
 > README in costruzione: verrà completato nella fase 8.
 
 ## Prerequisiti
-- JDK 21 o superiore (vedi `DECISIONI.md` per l'uso con JDK più recenti)
+- JDK 21 o superiore. Con JDK più recenti di Java 21 il `pom.xml` abilita
+  `-Dnet.bytebuddy.experimental=true`, necessario a Hibernate e Mockito per creare proxy e mock.
 - PostgreSQL in locale sulla porta 5432, utente `postgres`, password `postgres`, con due database:
   ```sql
   CREATE DATABASE festival;
@@ -31,3 +32,6 @@ Al primo avvio (profilo `dev`) `DataInitializer` inserisce i dati di esempio.
 | admin | admin | ADMIN |
 | user1 | user1 | USER |
 | user2 | user2 | USER |
+
+## Licenza
+MIT, vedi [LICENSE](LICENSE).

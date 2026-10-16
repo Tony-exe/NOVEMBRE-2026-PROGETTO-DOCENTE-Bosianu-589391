@@ -6,3 +6,8 @@ src/main/resources/static/app/
 *.iml
 .vscode/
 .claude/
+
+# Documenti di lavoro locali, non pubblicati
+siw-progetto-2026-novembre.pdf
+PROGETTO.md
+DECISIONI.md
