@@ -13,7 +13,10 @@ Spring Boot 3.5 · JPA/Hibernate · PostgreSQL · Thymeleaf · React.
   CREATE DATABASE festival;
   CREATE DATABASE festival_test;
   ```
-- Maven non serve: si usa il wrapper `mvnw`.
+- Maven non serve: si usa il wrapper `mvnw` (`./mvnw` in Git Bash/Linux/macOS, `.\mvnw` in PowerShell o cmd).
+  Node.js non serve: la build lo scarica in `frontend/node`.
+- Nota per Windows: `mvnw.cmd` è stato corretto per funzionare anche se la cartella del progetto contiene
+  parentesi quadre (la versione originale del wrapper leggeva i file con `Get-Content` senza `-LiteralPath`).
 
 ## Avvio
 ```bash
