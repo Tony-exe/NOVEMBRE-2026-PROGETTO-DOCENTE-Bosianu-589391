@@ -1,6 +1,7 @@
 target/
 node_modules/
 frontend/dist/
+frontend/node/
 src/main/resources/static/app/
 .idea/
 *.iml

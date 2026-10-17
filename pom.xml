@@ -83,6 +83,47 @@
                     <jvmArguments>${bytebuddy.flag}</jvmArguments>
                 </configuration>
             </plugin>
+            <!--
+              Build del frontend React dentro la build Maven: scarica Node in frontend/node (non serve
+              installarlo), esegue `npm install` e `npm run build` nella fase generate-resources, quindi
+              prima che Maven copi le risorse. L'output di Vite finisce in src/main/resources/static/app
+              ed entra nel jar. Per saltarlo (es. test più veloci): -Dskip.npm -Dskip.installnodenpm
+            -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.15.1</version>
+                <configuration>
+                    <workingDirectory>frontend</workingDirectory>
+                    <nodeVersion>v22.23.3</nodeVersion>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>installa-node-e-npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>npm-install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-build</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
