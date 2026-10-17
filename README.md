@@ -6,9 +6,6 @@ per la gestione di festival cinematografici, con film, cast, sale, proiezioni e 
 **Stack:** Java 21 · Spring Boot 3.5 · Spring Data JPA / Hibernate 6 · PostgreSQL · Spring Security ·
 Thymeleaf + Bootstrap 5 · React 18 (Vite) · springdoc-openapi (Swagger).
 
-La spiegazione completa del codice, scritta per poterlo discutere e modificare, è in
-[GUIDA_AL_CODICE.md](GUIDA_AL_CODICE.md).
-
 ## Funzionalità
 **Pubbliche (senza login)**
 - elenco e dettaglio dei festival, film partecipanti a un festival (Thymeleaf);
