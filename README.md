@@ -1,14 +1,35 @@
 # Festival cinematografici – Sistemi Informativi su Web
 
-Progetto assegnato dal docente (SIW, Roma Tre, appello di novembre 2026).
-Spring Boot 3.5 · JPA/Hibernate · PostgreSQL · Thymeleaf · React.
+Progetto assegnato dal docente (SIW, Università Roma Tre, appello di novembre 2026): un sistema informativo
+per la gestione di festival cinematografici, con film, cast, sale, proiezioni e recensioni.
 
-> README in costruzione: verrà completato nella fase 8.
+**Stack:** Java 21 · Spring Boot 3.5 · Spring Data JPA / Hibernate 6 · PostgreSQL · Spring Security ·
+Thymeleaf + Bootstrap 5 · React 18 (Vite) · springdoc-openapi (Swagger).
+
+La spiegazione completa del codice, scritta per poterlo discutere e modificare, è in
+[GUIDA_AL_CODICE.md](GUIDA_AL_CODICE.md).
+
+## Funzionalità
+**Pubbliche (senza login)**
+- elenco e dettaglio dei festival, film partecipanti a un festival (Thymeleaf);
+- programma delle proiezioni di un festival, raggruppato per giorno e filtrabile per data (React);
+- dettaglio di un film con regista, cast, festival, proiezioni e recensioni con media dei voti (React).
+
+**Utente registrato (`USER`)**
+- registrazione e login;
+- inserimento di una recensione (una sola per film), modifica ed eliminazione delle **proprie** recensioni.
+
+**Amministratore (`ADMIN`)**
+- creazione e modifica di festival, film (con regista e cast), registi, attori e sale;
+- associazione e rimozione di film da un festival (le proiezioni programmate del film vengono annullate);
+- programmazione, modifica, annullamento delle proiezioni, con controlli di consistenza: nessuna sovrapposizione
+  nella stessa sala, data nel periodo del festival, film associato al festival, niente proiezioni nel passato.
 
 ## Prerequisiti
 - JDK 21 o superiore. Con JDK più recenti di Java 21 il `pom.xml` abilita
   `-Dnet.bytebuddy.experimental=true`, necessario a Hibernate e Mockito per creare proxy e mock.
-- PostgreSQL in locale sulla porta 5432, utente `postgres`, password `postgres`, con due database:
+- PostgreSQL in locale sulla porta 5432, utente `postgres`, password `postgres`, con due database
+  (il primo per l'applicazione, il secondo per i test e l'esperimento):
   ```sql
   CREATE DATABASE festival;
   CREATE DATABASE festival_test;
@@ -22,19 +43,65 @@ Spring Boot 3.5 · JPA/Hibernate · PostgreSQL · Thymeleaf · React.
 ```bash
 ./mvnw spring-boot:run
 ```
-Al primo avvio (profilo `dev`) `DataInitializer` inserisce i dati di esempio.
+
+Al primo avvio (profilo `dev`, attivo per default) Hibernate crea le tabelle e `DataInitializer` inserisce i dati
+di esempio: 3 festival (Venezia già concluso, Roma e Cannes futuri, con date relative al giorno di avvio),
+20 film reali con registi e cast, 5 sale, 44 proiezioni, alcune recensioni.
+
+In alternativa si può creare il jar unico (backend + frontend React) e avviarlo:
+
+```bash
+./mvnw package -DskipTests
+```
+
+```bash
+java -Dnet.bytebuddy.experimental=true -jar target/festival-0.0.1-SNAPSHOT.jar
+```
+
+### Indirizzi utili
+| Pagina | URL |
+|---|---|
+| Home | http://localhost:8080/ |
+| Festival (Thymeleaf) | http://localhost:8080/festivals |
+| Programma di un festival (React) | http://localhost:8080/app/festivals/2/screenings |
+| Dettaglio film con recensioni (React) | http://localhost:8080/app/movies/1 |
+| Area amministrativa | http://localhost:8080/admin |
+| Documentazione API (Swagger UI) | http://localhost:8080/swagger-ui.html |
+
+### Credenziali di esempio
+| Username | Password | Ruolo |
+|---|---|---|
+| admin | admin | ADMIN |
+| user1 | user1 | USER |
+| user2 | user2 | USER |
+
+### Sviluppo del frontend
+Con il backend avviato su 8080, il frontend può girare anche con il server di sviluppo di Vite (ricaricamento
+automatico), che inoltra `/api`, `/login`, `/logout` e `/css` a Spring Boot:
+
+```bash
+cd frontend && npm run dev
+```
+
+(richiede Node installato, oppure si usa quello scaricato dalla build in `frontend/node`). Le pagine si aprono su
+http://localhost:5173/app/... . Per l'uso normale non serve: `./mvnw package` o `spring-boot:run` servono già la
+versione compilata di React.
 
 ## Test
 ```bash
 ./mvnw verify
 ```
 
-## Credenziali di esempio
-| Username | Password | Ruolo |
-|---|---|---|
-| admin | admin | ADMIN |
-| user1 | user1 | USER |
-| user2 | user2 | USER |
+93 test, tutti sullo stesso PostgreSQL locale (database `festival_test`, ricreato a ogni esecuzione):
+- **unit test** dei service con Mockito (regole di programmazione, recensioni, festival);
+- **integrazione** dei service: rollback di una programmazione fallita, due programmazioni concorrenti nella stessa
+  sala (il lock pessimistico ne fa riuscire una sola), rimozione di un film da un festival, proprietà delle recensioni;
+- **repository**: query di sovrapposizione, vincolo unique delle recensioni, JOIN FETCH ed EntityGraph;
+- **MockMvc**: sicurezza (redirect al login, 401/403 JSON, CSRF, login, registrazione), tutte le pagine Thymeleaf,
+  tutte le API REST;
+- **esperimento sulle strategie di fetch** (vedi sotto), con asserzioni sul numero di query.
+
+Per test più rapidi senza ricompilare il frontend: `./mvnw verify -Dskip.npm -Dskip.installnodenpm`.
 
 ## Esperimento sulle strategie di fetch
 Il test `FetchStrategyExperimentTest` (profilo `experiment`, database `festival_test`) confronta strategie
@@ -132,6 +199,62 @@ non si combina bene con la paginazione (Hibernate pagina in memoria): per questo
 di più collezioni insieme e, dove serve, usa query separate.
 
 Le asserzioni del test fissano questi numeri (101, 1, 1, 5, 105, 1): se una modifica reintroduce un N+1, il test fallisce.
+
+## Architettura
+Architettura a livelli: ogni livello usa solo quello sottostante.
+
+```
+Browser ──► Spring Security (filtri: sessione, CSRF, ruoli)
+              │
+              ├─► controller        Thymeleaf (MVC): riceve la richiesta, valida il form, chiama il service, sceglie la vista
+              ├─► controller.api    REST per React: riceve JSON, chiama il service, restituisce DTO
+              │
+              ▼
+           service                  casi d'uso e regole di business, @Transactional, @PreAuthorize
+              │
+              ▼
+           repository               Spring Data JPA: query con JOIN FETCH / @EntityGraph, lock pessimistico
+              │
+              ▼
+           model (entità JPA) ──► PostgreSQL
+```
+
+| Package (`it.uniroma3.siw.festival`) | Contenuto |
+|---|---|
+| `model` | 9 entità JPA (Festival, Film, Regista, Attore, Interpretazione, Sala, Proiezione, Recensione, Utente) e 2 enum |
+| `repository` | interfacce Spring Data JPA con le query di ogni caso d'uso |
+| `service` | casi d'uso, regole di business, transazioni |
+| `controller`, `controller.admin` | controller Thymeleaf (pagine pubbliche, login, area amministrativa) |
+| `controller.api` | controller REST usati da React |
+| `dto.form`, `dto.api` | form object con Bean Validation e DTO JSON (le entità non escono mai in JSON) |
+| `exception` | eccezioni di dominio e gestori centralizzati (pagine HTML / ProblemDetail JSON) |
+| `security` | configurazione Spring Security, `UserDetailsService`, risposte 401/403 JSON, filtro CSRF |
+| `config` | dati di esempio e metadati OpenAPI |
+
+Scelte principali:
+- **Fetch**: tutte le associazioni sono LAZY (anche le `@ManyToOne`, che in JPA sarebbero EAGER) e
+  `spring.jpa.open-in-view=false`; ogni caso d'uso carica ciò che gli serve con query dedicate, senza mai mettere
+  in JOIN FETCH più collezioni nella stessa query.
+- **Transazioni**: service in `@Transactional(readOnly = true)`, scritture in `@Transactional`; la programmazione di
+  una proiezione usa READ_COMMITTED più un lock pessimistico (`SELECT ... FOR UPDATE`) sulla sala, contro le
+  programmazioni concorrenti sovrapposte.
+- **Sicurezza**: form login con sessione, BCrypt, regole sugli URL e `@PreAuthorize` sui service, controllo della
+  proprietà delle recensioni nel service; CSRF attivo anche per React (cookie `XSRF-TOKEN` → header `X-XSRF-TOKEN`).
+- **Errori**: pagine 403/404 personalizzate per Thymeleaf, `ProblemDetail` (RFC 7807) per le API.
+
+## Struttura del repository
+```
+├── pom.xml                         dipendenze, build del frontend (frontend-maven-plugin)
+├── mvnw, mvnw.cmd, .mvn/           Maven wrapper
+├── frontend/                       React + Vite (sorgenti in frontend/src)
+└── src/
+    ├── main/java/it/uniroma3/siw/festival/   codice Java (package descritti sopra)
+    ├── main/resources/
+    │   ├── application*.properties           configurazione (profilo dev)
+    │   ├── templates/                         pagine Thymeleaf
+    │   └── static/                            CSS; static/app è generata dalla build di React
+    └── test/                                  test e profili test / experiment
+```
 
 ## Licenza
 MIT, vedi [LICENSE](LICENSE).
