@@ -52,6 +52,12 @@ public class RecensioneService {
         return recensioneRepository.findByFilmIdWithUtente(filmId);
     }
 
+    /** Una recensione con autore e film caricati. */
+    public Recensione trova(Long id) {
+        return recensioneRepository.findByIdWithUtenteAndFilm(id)
+                .orElseThrow(() -> new EntityNotFoundException("Recensione", id));
+    }
+
     /** Media dei voti (null se non ci sono recensioni). */
     public Double mediaVoti(Long filmId) {
         verificaFilmEsistente(filmId);
