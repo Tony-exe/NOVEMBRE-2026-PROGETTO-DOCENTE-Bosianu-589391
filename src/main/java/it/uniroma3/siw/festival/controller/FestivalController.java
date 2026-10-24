@@ -31,8 +31,8 @@ public class FestivalController {
 
     @GetMapping("/festivals/{id}")
     public String dettaglio(@PathVariable Long id, Model model) {
-        model.addAttribute("festival", festivalService.trova(id)); // 404 se non esiste (MvcExceptionHandler)
-        return "festivals/detail";
+        model.addAttribute("festival", festivalService.trova(id)); // 404 se non esiste (GlobalExceptionHandler)
+        return "festivals/show";
     }
 
     @GetMapping("/festivals/{id}/films")

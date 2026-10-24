@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +22,7 @@ import it.uniroma3.siw.festival.dto.form.FestivalForm;
 import it.uniroma3.siw.festival.exception.RegolaBusinessException;
 import it.uniroma3.siw.festival.model.Festival;
 import it.uniroma3.siw.festival.model.Film;
-import it.uniroma3.siw.festival.model.Proiezione;
 import it.uniroma3.siw.festival.model.Regista;
-import it.uniroma3.siw.festival.model.StatoProiezione;
 import it.uniroma3.siw.festival.repository.FestivalRepository;
 import it.uniroma3.siw.festival.repository.FilmRepository;
 import it.uniroma3.siw.festival.repository.ProiezioneRepository;
@@ -83,19 +80,15 @@ class FestivalServiceTest {
     }
 
     @Test
-    void rimuovereUnFilmAnnullaSoloLeProiezioniProgrammate() {
+    void rimuovereUnFilmAnnullaLeProiezioniProgrammate() {
         festival.addFilm(film);
-        Proiezione programmata = new Proiezione();
-        programmata.setStato(StatoProiezione.SCHEDULED);
-        Proiezione svolta = new Proiezione();
-        svolta.setStato(StatoProiezione.COMPLETED);
-        when(proiezioneRepository.findByFestivalIdAndFilmId(1L, 2L)).thenReturn(List.of(programmata, svolta));
+        // l'UPDATE di massa (solo le SCHEDULED) è verificato sul DB vero in ProiezioneServiceIntegrationTest
+        when(proiezioneRepository.annullaProgrammate(1L, 2L)).thenReturn(1);
 
         int annullate = service.rimuoviFilm(1L, 2L);
 
         assertThat(annullate).isEqualTo(1);
-        assertThat(programmata.getStato()).isEqualTo(StatoProiezione.CANCELLED);
-        assertThat(svolta.getStato()).isEqualTo(StatoProiezione.COMPLETED);
+        verify(proiezioneRepository).annullaProgrammate(1L, 2L);
         assertThat(festival.getFilms()).doesNotContain(film);
         assertThat(film.getFestivals()).doesNotContain(festival);
     }

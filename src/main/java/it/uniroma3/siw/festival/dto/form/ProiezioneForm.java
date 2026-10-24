@@ -16,10 +16,10 @@ import jakarta.validation.constraints.NotNull;
  */
 public class ProiezioneForm {
 
-    @NotNull(message = "Seleziona un film")
+    @NotNull
     private Long filmId;
 
-    @NotNull(message = "Seleziona una sala")
+    @NotNull
     private Long salaId;
 
     @NotNull

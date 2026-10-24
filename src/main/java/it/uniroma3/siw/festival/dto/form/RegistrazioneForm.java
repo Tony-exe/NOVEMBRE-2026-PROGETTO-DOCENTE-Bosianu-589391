@@ -8,11 +8,11 @@ public class RegistrazioneForm {
 
     @NotBlank
     @Size(min = 3, max = 50)
-    @Pattern(regexp = "[A-Za-z0-9_.]+", message = "Usa solo lettere, numeri, punto e underscore")
+    @Pattern(regexp = "[A-Za-z0-9_.]+")
     private String username;
 
     @NotBlank
-    @Size(min = 4, max = 100, message = "La password deve avere almeno 4 caratteri")
+    @Size(min = 4, max = 100)
     private String password;
 
     public RegistrazioneForm() {

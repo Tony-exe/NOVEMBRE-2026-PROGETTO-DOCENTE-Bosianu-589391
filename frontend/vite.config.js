@@ -9,6 +9,8 @@ export default defineConfig({
     // `npm run build` (lanciato anche da ./mvnw package) scrive qui: Spring Boot serve i file statici da static/
     outDir: '../src/main/resources/static/app',
     emptyOutDir: true,
+    // MUI porta il bundle a ~540 kB (175 kB compressi): accettabile per due pagine, alzo la soglia dell'avviso
+    chunkSizeWarningLimit: 700,
   },
   server: {
     port: 5173,

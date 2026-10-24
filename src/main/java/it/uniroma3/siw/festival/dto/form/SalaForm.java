@@ -17,7 +17,7 @@ public class SalaForm {
     private String indirizzo;
 
     @NotNull
-    @Min(value = 1, message = "La capienza deve essere maggiore di zero")
+    @Min(1)
     private Integer capienza;
 
     public static SalaForm da(Sala sala) {

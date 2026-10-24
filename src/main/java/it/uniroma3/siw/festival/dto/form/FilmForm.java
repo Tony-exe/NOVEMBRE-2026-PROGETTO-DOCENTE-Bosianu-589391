@@ -32,7 +32,7 @@ public class FilmForm {
     @Size(max = 100)
     private String paeseProduzione;
 
-    @NotNull(message = "Seleziona un regista")
+    @NotNull
     private Long registaId;
 
     public static FilmForm da(Film film) {

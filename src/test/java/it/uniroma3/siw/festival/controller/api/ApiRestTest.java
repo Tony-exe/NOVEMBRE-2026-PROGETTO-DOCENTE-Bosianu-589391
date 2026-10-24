@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -232,12 +233,28 @@ class ApiRestTest {
     @WithMockUser(username = "mario")
     void corpoNonValidoRestituisce400ConElencoCampi() throws Exception {
         mvc.perform(post("/api/movies/{id}/reviews", filmId).with(csrf())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "it")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"testo\": \"corto\", \"voto\": 9}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.errori", hasSize(2)))
-                .andExpect(jsonPath("$.errori[?(@.campo == 'voto')].messaggio").value("Il voto va da 1 a 5"));
+                // testi presi da messages.properties (chiavi Max.voto e Size.testo)
+                .andExpect(jsonPath("$.errori[?(@.campo == 'voto')].messaggio").value("Il voto va da 1 a 5"))
+                .andExpect(jsonPath("$.errori[?(@.campo == 'testo')].messaggio")
+                        .value("Il testo deve avere tra 10 e 2000 caratteri"));
+    }
+
+    @Test
+    @WithMockUser(username = "mario")
+    void messaggiDiValidazioneNellaLinguaRichiesta() throws Exception {
+        // stessa chiave Max.voto, ma dal file messages_en.properties
+        mvc.perform(post("/api/movies/{id}/reviews", filmId).with(csrf())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"testo\": \"Un testo abbastanza lungo\", \"voto\": 9}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errori[0].messaggio").value("The rating goes from 1 to 5"));
     }
 
     @Test

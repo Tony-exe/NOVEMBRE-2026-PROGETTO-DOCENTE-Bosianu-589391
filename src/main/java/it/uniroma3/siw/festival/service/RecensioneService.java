@@ -3,6 +3,8 @@ package it.uniroma3.siw.festival.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ import it.uniroma3.siw.festival.repository.UtenteRepository;
 @Service
 @Transactional(readOnly = true)
 public class RecensioneService {
+
+    private static final Logger log = LoggerFactory.getLogger(RecensioneService.class);
 
     /*
      * Sicurezza a livello di metodo: serve un utente registrato E lo username passato al metodo
@@ -64,6 +68,11 @@ public class RecensioneService {
         return recensioneRepository.mediaVoti(filmId);
     }
 
+    /*
+     * Anche qui si legge (existsBy...) per decidere se scrivere, ma basta l'isolamento di default
+     * READ_COMMITTED: la garanzia finale è il vincolo unique (film_id, utente_id) nel database, che il
+     * DBMS verifica in modo atomico anche tra transazioni concorrenti.
+     */
     @PreAuthorize(UTENTE_AUTENTICATO)
     @Transactional
     public Recensione crea(Long filmId, String username, RecensioneForm form) {
@@ -73,13 +82,16 @@ public class RecensioneService {
 
         // Controllo preventivo: copre il caso normale con un messaggio chiaro
         if (recensioneRepository.existsByFilmIdAndUtenteId(filmId, autore.getId())) {
+            log.warn("Recensione duplicata rifiutata: film={}, utente={}", filmId, username);
             throw new RecensioneDuplicataException("Hai già recensito \"" + film.getTitolo() + "\"");
         }
         Recensione recensione = new Recensione(form.getTesto(), form.getVoto(), LocalDate.now(), film, autore);
         try {
             // saveAndFlush esegue subito l'INSERT: se due richieste concorrenti superano entrambe il
             // controllo sopra, il vincolo unique del DB fa fallire la seconda, e la traduco nello stesso errore
-            return recensioneRepository.saveAndFlush(recensione);
+            Recensione salvata = recensioneRepository.saveAndFlush(recensione);
+            log.info("Recensione inserita: id={}, film={}, utente={}", salvata.getId(), filmId, username);
+            return salvata;
         } catch (DataIntegrityViolationException e) {
             throw new RecensioneDuplicataException("Hai già recensito \"" + film.getTitolo() + "\"");
         }
@@ -92,6 +104,7 @@ public class RecensioneService {
         recensione.setTesto(form.getTesto());
         recensione.setVoto(form.getVoto());
         recensione.setData(LocalDate.now());
+        log.info("Recensione modificata: id={}, utente={}", recensioneId, username);
         return recensione;
     }
 
@@ -100,6 +113,7 @@ public class RecensioneService {
     public void elimina(Long recensioneId, String username) {
         Recensione recensione = trovaPropria(recensioneId, username);
         recensioneRepository.delete(recensione);
+        log.info("Recensione eliminata: id={}, utente={}", recensioneId, username);
     }
 
     /*
@@ -111,6 +125,7 @@ public class RecensioneService {
         Recensione recensione = recensioneRepository.findByIdWithUtenteAndFilm(recensioneId)
                 .orElseThrow(() -> new EntityNotFoundException("Recensione", recensioneId));
         if (!recensione.getUtente().getUsername().equals(username)) {
+            log.warn("Tentativo di modificare la recensione {} di un altro utente da parte di {}", recensioneId, username);
             throw new OperazioneNonAutorizzataException("Puoi modificare o eliminare solo le tue recensioni");
         }
         return recensione;

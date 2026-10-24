@@ -124,7 +124,7 @@ class SecurityConfigTest {
     @Test
     void loginConPasswordSbagliata() throws Exception {
         mvc.perform(formLogin("/login").user("admin").password("sbagliata"))
-                .andExpect(redirectedUrl("/login?error"))
+                .andExpect(redirectedUrl("/login?error=true"))
                 .andExpect(unauthenticated());
     }
 

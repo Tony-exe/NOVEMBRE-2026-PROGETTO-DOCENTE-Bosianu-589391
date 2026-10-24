@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import it.uniroma3.siw.festival.model.Proiezione;
@@ -66,9 +67,23 @@ public interface ProiezioneRepository extends JpaRepository<Proiezione, Long> {
             """)
     boolean esistonoProiezioniFuoriPeriodo(Long festivalId, LocalDate inizio, LocalDate fine);
 
-    // Proiezioni di un film in un festival (per la rimozione del film dal festival)
-    @Query("select p from Proiezione p where p.festival.id = :festivalId and p.film.id = :filmId")
-    List<Proiezione> findByFestivalIdAndFilmId(Long festivalId, Long filmId);
+    /*
+     * Annulla in blocco le proiezioni ancora programmate di un film in un festival (rimozione del film
+     * dal festival). È un UPDATE JPQL eseguito dal DBMS in un'unica istruzione: aggiornare le righe una
+     * per una con un ciclo Java sarebbe molto inefficiente (lezione 05). @Modifying segnala a Spring Data
+     * che la query modifica i dati; restituisce il numero di righe aggiornate.
+     * Attenzione: un UPDATE di massa non passa dal persistence context, quindi eventuali Proiezione già
+     * caricate in memoria non vedono il nuovo stato (qui non ce ne sono).
+     */
+    @Modifying
+    @Query("""
+            update Proiezione p
+            set p.stato = it.uniroma3.siw.festival.model.StatoProiezione.CANCELLED
+            where p.festival.id = :festivalId
+              and p.film.id = :filmId
+              and p.stato = it.uniroma3.siw.festival.model.StatoProiezione.SCHEDULED
+            """)
+    int annullaProgrammate(Long festivalId, Long filmId);
 
     /*
      * Due intervalli [inizio, fine) si sovrappongono se: inizio < altraFine AND fine > altraInizio.

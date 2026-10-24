@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Pagina non trovata')}"></head>
+<head th:replace="~{fragments/layout :: head(#{errore.404.titolo})}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 <main class="container py-5 text-center">
     <h1 class="display-4">404</h1>
-    <!-- "messaggio" arriva dal nostro MvcExceptionHandler; per URL inesistenti c'è il testo generico -->
-    <p class="lead" th:text="${messaggio} ?: 'La pagina che cerchi non esiste.'">La pagina che cerchi non esiste.</p>
-    <a th:href="@{/}" class="btn btn-primary">Torna alla home</a>
+    <!-- "messaggio" arriva dal nostro GlobalExceptionHandler; altrimenti testo preso da messages.properties -->
+    <p class="lead" th:text="${messaggio} ?: #{errore.404.testo}">La pagina che cerchi non esiste.</p>
+    <a th:href="@{/}" class="btn btn-primary" th:text="#{errore.torna}">Torna alla home</a>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>

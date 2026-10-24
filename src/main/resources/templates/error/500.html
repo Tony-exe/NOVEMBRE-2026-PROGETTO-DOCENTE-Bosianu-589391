@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{errore.500.titolo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-5 text-center">
+    <h1 class="display-4">500</h1>
+    <!-- Messaggio generico: i dettagli dell'errore finiscono nel log, mai all'utente -->
+    <p class="lead" th:text="${messaggio} ?: #{errore.500.testo}">Si è verificato un errore interno.</p>
+    <a th:href="@{/}" class="btn btn-primary" th:text="#{errore.torna}">Torna alla home</a>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Errore')}"></head>
+<head th:replace="~{fragments/layout :: head(#{errore.titolo})}"></head>
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 <main class="container py-5 text-center">
-    <!-- "status" lo fornisce Spring Boot (BasicErrorController) o il nostro MvcExceptionHandler -->
+    <!-- "status" lo fornisce Spring Boot (BasicErrorController) o il nostro GlobalExceptionHandler -->
     <h1 class="display-4" th:text="${status} ?: 'Errore'">Errore</h1>
-    <p class="lead" th:text="${messaggio} ?: 'Si è verificato un errore imprevisto.'">Si è verificato un errore imprevisto.</p>
-    <a th:href="@{/}" class="btn btn-primary">Torna alla home</a>
+    <p class="lead" th:text="${messaggio} ?: #{errore.testo}">Si è verificato un errore imprevisto.</p>
+    <a th:href="@{/}" class="btn btn-primary" th:text="#{errore.torna}">Torna alla home</a>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>

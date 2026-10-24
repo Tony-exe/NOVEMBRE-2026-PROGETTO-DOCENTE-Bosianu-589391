@@ -77,7 +77,7 @@ class ProiezioneServiceTest {
         lenient().when(festivalRepository.findById(FESTIVAL_ID)).thenReturn(Optional.of(festival));
         lenient().when(filmRepository.findById(FILM_ID)).thenReturn(Optional.of(film));
         lenient().when(festivalRepository.partecipaAlFestival(FESTIVAL_ID, FILM_ID)).thenReturn(true);
-        lenient().when(salaRepository.findByIdForUpdate(SALA_ID)).thenReturn(Optional.of(sala));
+        lenient().when(salaRepository.findById(SALA_ID)).thenReturn(Optional.of(sala));
         lenient().when(proiezioneRepository.save(any(Proiezione.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 
@@ -91,7 +91,6 @@ class ProiezioneServiceTest {
         assertThat(festival.getProiezioni()).contains(p);
         assertThat(film.getProiezioni()).contains(p);
         assertThat(sala.getProiezioni()).contains(p);
-        verify(salaRepository).findByIdForUpdate(SALA_ID); // il lock sulla sala viene preso
         verify(proiezioneRepository).save(p);
     }
 
@@ -144,7 +143,7 @@ class ProiezioneServiceTest {
 
     @Test
     void salaInesistente() {
-        when(salaRepository.findByIdForUpdate(anyLong())).thenReturn(Optional.empty());
+        when(salaRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.programmaProiezione(FESTIVAL_ID, FILM_ID, 99L, giorno, LocalTime.NOON))
                 .isInstanceOf(EntityNotFoundException.class);

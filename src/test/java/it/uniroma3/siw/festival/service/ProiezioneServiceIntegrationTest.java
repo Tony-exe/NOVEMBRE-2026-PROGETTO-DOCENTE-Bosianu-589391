@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutorService;
@@ -41,7 +42,7 @@ import it.uniroma3.siw.festival.support.DatabaseCleaner;
 import it.uniroma3.siw.festival.repository.SalaRepository;
 
 /**
- * Test di integrazione su PostgreSQL vero: transazioni, rollback e lock reali.
+ * Test di integrazione su PostgreSQL vero: transazioni, rollback e isolamento reali.
  * La classe NON è @Transactional, così ogni chiamata al service apre e chiude la propria transazione.
  */
 @SpringBootTest
@@ -130,8 +131,9 @@ class ProiezioneServiceIntegrationTest {
 
     /*
      * Due thread programmano nello stesso momento proiezioni sovrapposte nella stessa sala.
-     * Grazie al lock pessimistico sulla sala, il secondo aspetta il commit del primo e poi trova
-     * la sovrapposizione: esattamente una programmazione riesce, l'altra riceve un conflitto.
+     * Grazie all'isolamento SERIALIZABLE esattamente una programmazione riesce. L'altra fallisce: o trova
+     * la sovrapposizione (se parte dopo il commit della prima) o PostgreSQL la annulla con un errore di
+     * serializzazione (ConcurrencyFailureException), che l'applicazione traduce in un 409.
      */
     @Test
     void dueProgrammazioniConcorrentiNellaStessaSala() throws Exception {
@@ -155,7 +157,8 @@ class ProiezioneServiceIntegrationTest {
                 risultato.get(30, TimeUnit.SECONDS);
                 riuscite++;
             } catch (java.util.concurrent.ExecutionException e) {
-                assertThat(e.getCause()).isInstanceOf(ConflittoProgrammazioneException.class);
+                assertThat(e.getCause()).isInstanceOfAny(ConflittoProgrammazioneException.class,
+                        ConcurrencyFailureException.class);
                 conflitti++;
             }
         }

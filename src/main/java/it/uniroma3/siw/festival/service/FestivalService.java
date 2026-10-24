@@ -2,6 +2,8 @@ package it.uniroma3.siw.festival.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,8 +13,6 @@ import it.uniroma3.siw.festival.exception.EntityNotFoundException;
 import it.uniroma3.siw.festival.exception.RegolaBusinessException;
 import it.uniroma3.siw.festival.model.Festival;
 import it.uniroma3.siw.festival.model.Film;
-import it.uniroma3.siw.festival.model.Proiezione;
-import it.uniroma3.siw.festival.model.StatoProiezione;
 import it.uniroma3.siw.festival.repository.FestivalRepository;
 import it.uniroma3.siw.festival.repository.FilmRepository;
 import it.uniroma3.siw.festival.repository.ProiezioneRepository;
@@ -27,6 +27,8 @@ import it.uniroma3.siw.festival.repository.ProiezioneRepository;
 @Service
 @Transactional(readOnly = true)
 public class FestivalService {
+
+    private static final Logger log = LoggerFactory.getLogger(FestivalService.class);
 
     private final FestivalRepository festivalRepository;
     private final FilmRepository filmRepository;
@@ -60,7 +62,9 @@ public class FestivalService {
         verificaPeriodo(form);
         Festival festival = new Festival();
         copiaDati(form, festival);
-        return festivalRepository.save(festival);
+        Festival salvato = festivalRepository.save(festival);
+        log.info("Festival creato: id={}, nome={}", salvato.getId(), salvato.getNome());
+        return salvato;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -88,6 +92,7 @@ public class FestivalService {
         }
         // Festival è il lato proprietario: aggiungere qui produce l'INSERT in festival_film
         festival.addFilm(film);
+        log.info("Film {} aggiunto al festival {}", filmId, festivalId);
     }
 
     /**
@@ -111,13 +116,9 @@ public class FestivalService {
 
         festival.removeFilm(film); // DELETE della riga in festival_film al commit
 
-        int annullate = 0;
-        for (Proiezione proiezione : proiezioneRepository.findByFestivalIdAndFilmId(festivalId, filmId)) {
-            if (proiezione.getStato() == StatoProiezione.SCHEDULED) {
-                proiezione.setStato(StatoProiezione.CANCELLED); // UPDATE al commit (dirty checking)
-                annullate++;
-            }
-        }
+        // un solo UPDATE JPQL per tutte le proiezioni programmate (le COMPLETED restano invariate)
+        int annullate = proiezioneRepository.annullaProgrammate(festivalId, filmId);
+        log.info("Film {} rimosso dal festival {}: {} proiezioni annullate", filmId, festivalId, annullate);
         return annullate;
     }
 

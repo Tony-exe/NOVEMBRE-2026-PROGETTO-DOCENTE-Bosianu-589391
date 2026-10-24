@@ -1,8 +1,25 @@
-/* Piccoli ritocchi a Bootstrap, condivisi da pagine Thymeleaf e React */
+/*
+ * Foglio di stile proprio, caricato dopo Bootstrap: a parità di specificità vince l'ultima regola
+ * (cascade), quindi queste regole possono ritoccare quelle di Bootstrap.
+ */
+
+/*
+ * Layout della pagina con flexbox: il body è un contenitore flessibile in colonna (navbar, main, footer).
+ * main ha flex: 1, cioè si allarga per occupare tutto lo spazio libero, così il footer resta in fondo
+ * alla finestra anche nelle pagine con poco contenuto.
+ */
 body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     background-color: #f7f7f9;
 }
 
+main {
+    flex: 1;
+}
+
+/* Selettore di classe + pseudo-classe :hover: l'ombra compare quando il mouse passa sulla card */
 .card-festival {
     transition: box-shadow 0.15s ease-in-out;
 }
@@ -11,12 +28,13 @@ body {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
 }
 
+/* Selettore discendente: le celle (td, th) dentro un elemento con classe "table" */
 .table td,
 .table th {
     vertical-align: middle;
 }
 
-/* I form di azione (POST) dentro le tabelle restano sulla stessa riga dei link */
+/* I form di azione (POST) dentro le tabelle restano sulla stessa riga dei link (inline invece di block) */
 .azioni form {
     display: inline;
 }

@@ -7,8 +7,8 @@
     <h1 class="h3 mb-4">Accedi</h1>
 
     <div th:if="${messaggio}" class="alert alert-success" th:text="${messaggio}"></div>
-    <!-- Spring Security reindirizza a /login?error se le credenziali sono sbagliate -->
-    <div th:if="${param.error}" class="alert alert-danger">Username o password non validi.</div>
+    <!-- Spring Security reindirizza a /login?error=true (failureUrl) se le credenziali sono sbagliate -->
+    <div th:if="${param.error}" class="alert alert-danger" th:text="#{login.errore}">Username o password non validi.</div>
 
     <!-- th:action aggiunge automaticamente il campo nascosto con il token CSRF.
          Il POST /login è gestito dal filtro di Spring Security, non da un controller. -->

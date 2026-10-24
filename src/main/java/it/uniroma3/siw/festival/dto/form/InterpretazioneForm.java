@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 /** Aggiunta di un attore al cast di un film, con il personaggio interpretato. */
 public class InterpretazioneForm {
 
-    @NotNull(message = "Seleziona un attore")
+    @NotNull
     private Long attoreId;
 
     @NotBlank

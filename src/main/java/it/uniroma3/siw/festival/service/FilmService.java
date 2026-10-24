@@ -3,6 +3,8 @@ package it.uniroma3.siw.festival.service;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,6 +30,8 @@ import it.uniroma3.siw.festival.repository.RegistaRepository;
 @Service
 @Transactional(readOnly = true)
 public class FilmService {
+
+    private static final Logger log = LoggerFactory.getLogger(FilmService.class);
 
     private static final int DIMENSIONE_MASSIMA_PAGINA = 50;
 
@@ -103,7 +107,9 @@ public class FilmService {
     public Film crea(FilmForm form) {
         Film film = new Film();
         copiaDati(form, film);
-        return filmRepository.save(film);
+        Film salvato = filmRepository.save(film);
+        log.info("Film creato: id={}, titolo={}", salvato.getId(), salvato.getTitolo());
+        return salvato;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -138,6 +144,7 @@ public class FilmService {
         }
         // Grazie a cascade = ALL sul film, la nuova Interpretazione viene salvata al commit
         film.addInterpretazione(attore, nome);
+        log.info("Interpretazione aggiunta: film={}, attore={}, personaggio={}", filmId, attoreId, nome);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

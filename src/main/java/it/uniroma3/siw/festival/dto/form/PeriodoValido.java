@@ -17,6 +17,7 @@ import jakarta.validation.Payload;
 @Constraint(validatedBy = PeriodoValidoValidator.class)
 public @interface PeriodoValido {
 
+    // Testo di riserva: quello mostrato all'utente è nella chiave "PeriodoValido" di messages.properties
     String message() default "La data di fine non può precedere la data di inizio";
 
     Class<?>[] groups() default {};

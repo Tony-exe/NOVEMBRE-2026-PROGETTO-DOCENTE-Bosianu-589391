@@ -1,5 +1,7 @@
 package it.uniroma3.siw.festival.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,8 @@ import it.uniroma3.siw.festival.repository.UtenteRepository;
 @Service
 @Transactional(readOnly = true)
 public class UtenteService {
+
+    private static final Logger log = LoggerFactory.getLogger(UtenteService.class);
 
     private final UtenteRepository utenteRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,10 +38,13 @@ public class UtenteService {
         String username = form.getUsername().trim();
         // Il vincolo unique su username nel DB resta comunque l'ultima garanzia
         if (utenteRepository.existsByUsername(username)) {
+            log.warn("Registrazione rifiutata: username {} già in uso", username);
             throw new UsernameGiaUsatoException("Lo username \"" + username + "\" è già in uso");
         }
         // Nel DB va solo l'hash BCrypt, mai la password in chiaro
         Utente utente = new Utente(username, passwordEncoder.encode(form.getPassword()), Ruolo.USER);
-        return utenteRepository.save(utente);
+        Utente salvato = utenteRepository.save(utente);
+        log.info("Utente registrato: {}", username); // mai la password nel log
+        return salvato;
     }
 }

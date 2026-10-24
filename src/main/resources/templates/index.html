@@ -10,6 +10,8 @@
     <div class="p-4 mb-4 bg-white rounded-3 border">
         <h1 class="display-6">Festival cinematografici</h1>
         <p class="lead mb-0">Programmi, film in concorso, proiezioni e recensioni dei festival.</p>
+        <!-- userDetails è messo nel modello di ogni pagina da GlobalController (null per i visitatori anonimi) -->
+        <p class="mt-2 mb-0" th:if="${userDetails}">Bentornato, <strong th:text="${userDetails.username}">utente</strong>.</p>
     </div>
 
     <h2 class="h4 mb-3">I festival</h2>

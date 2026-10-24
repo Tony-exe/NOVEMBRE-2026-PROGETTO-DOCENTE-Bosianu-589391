@@ -4,7 +4,7 @@ Progetto assegnato dal docente (SIW, Università Roma Tre, appello di novembre 2
 per la gestione di festival cinematografici, con film, cast, sale, proiezioni e recensioni.
 
 **Stack:** Java 21 · Spring Boot 3.5 · Spring Data JPA / Hibernate 6 · PostgreSQL · Spring Security ·
-Thymeleaf + Bootstrap 5 · React 18 (Vite) · springdoc-openapi (Swagger).
+Thymeleaf + Bootstrap 5 · React 18 + TypeScript (Vite, Material UI, axios, React Router) · springdoc-openapi (Swagger).
 
 ## Funzionalità
 **Pubbliche (senza login)**
@@ -89,13 +89,13 @@ versione compilata di React.
 ./mvnw verify
 ```
 
-93 test, tutti sullo stesso PostgreSQL locale (database `festival_test`, ricreato a ogni esecuzione):
+94 test, tutti sullo stesso PostgreSQL locale (database `festival_test`, ricreato a ogni esecuzione):
 - **unit test** dei service con Mockito (regole di programmazione, recensioni, festival);
 - **integrazione** dei service: rollback di una programmazione fallita, due programmazioni concorrenti nella stessa
-  sala (il lock pessimistico ne fa riuscire una sola), rimozione di un film da un festival, proprietà delle recensioni;
+  sala (l'isolamento SERIALIZABLE ne fa riuscire una sola), rimozione di un film da un festival, proprietà delle recensioni;
 - **repository**: query di sovrapposizione, vincolo unique delle recensioni, JOIN FETCH ed EntityGraph;
 - **MockMvc**: sicurezza (redirect al login, 401/403 JSON, CSRF, login, registrazione), tutte le pagine Thymeleaf,
-  tutte le API REST;
+  tutte le API REST (compresi i messaggi di validazione in italiano e in inglese);
 - **esperimento sulle strategie di fetch** (vedi sotto), con asserzioni sul numero di query.
 
 Per test più rapidi senza ricompilare il frontend: `./mvnw verify -Dskip.npm -Dskip.installnodenpm`.
@@ -210,7 +210,7 @@ Browser ──► Spring Security (filtri: sessione, CSRF, ruoli)
            service                  casi d'uso e regole di business, @Transactional, @PreAuthorize
               │
               ▼
-           repository               Spring Data JPA: query con JOIN FETCH / @EntityGraph, lock pessimistico
+           repository               Spring Data JPA: query derivate, JPQL con JOIN FETCH / @EntityGraph, UPDATE di massa
               │
               ▼
            model (entità JPA) ──► PostgreSQL
@@ -221,7 +221,7 @@ Browser ──► Spring Security (filtri: sessione, CSRF, ruoli)
 | `model` | 9 entità JPA (Festival, Film, Regista, Attore, Interpretazione, Sala, Proiezione, Recensione, Utente) e 2 enum |
 | `repository` | interfacce Spring Data JPA con le query di ogni caso d'uso |
 | `service` | casi d'uso, regole di business, transazioni |
-| `controller`, `controller.admin` | controller Thymeleaf (pagine pubbliche, login, area amministrativa) |
+| `controller`, `controller.admin` | controller Thymeleaf (pagine pubbliche, login, area amministrativa) e `@ControllerAdvice` globali (trim delle stringhe, utente corrente) |
 | `controller.api` | controller REST usati da React |
 | `dto.form`, `dto.api` | form object con Bean Validation e DTO JSON (le entità non escono mai in JSON) |
 | `exception` | eccezioni di dominio e gestori centralizzati (pagine HTML / ProblemDetail JSON) |
@@ -232,22 +232,28 @@ Scelte principali:
 - **Fetch**: tutte le associazioni sono LAZY (anche le `@ManyToOne`, che in JPA sarebbero EAGER) e
   `spring.jpa.open-in-view=false`; ogni caso d'uso carica ciò che gli serve con query dedicate, senza mai mettere
   in JOIN FETCH più collezioni nella stessa query.
-- **Transazioni**: service in `@Transactional(readOnly = true)`, scritture in `@Transactional`; la programmazione di
-  una proiezione usa READ_COMMITTED più un lock pessimistico (`SELECT ... FOR UPDATE`) sulla sala, contro le
-  programmazioni concorrenti sovrapposte.
+- **Transazioni**: service in `@Transactional(readOnly = true)`, scritture in `@Transactional`; isolamento di default
+  (READ_COMMITTED) tranne dove il caso d'uso legge dei dati per decidere se scrivere: la programmazione e la modifica
+  di una proiezione usano `Isolation.SERIALIZABLE`, così due programmazioni concorrenti sovrapposte nella stessa sala
+  non possono riuscire entrambe (una viene annullata da PostgreSQL e l'utente riceve un 409 "riprova").
+- **Logging**: SLF4J nei service (`INFO` per gli eventi di business, `WARN` per le regole violate, `ERROR` per gli
+  errori inattesi); livelli configurati in `application.properties`.
 - **Sicurezza**: form login con sessione, BCrypt, regole sugli URL e `@PreAuthorize` sui service, controllo della
   proprietà delle recensioni nel service; CSRF attivo anche per React (cookie `XSRF-TOKEN` → header `X-XSRF-TOKEN`).
-- **Errori**: pagine 403/404 personalizzate per Thymeleaf, `ProblemDetail` (RFC 7807) per le API.
+- **Validazione ed errori**: Bean Validation sui form con i testi dei messaggi in `messages/messages.properties`
+  (italiano) e `messages_en.properties` (inglese); `GlobalExceptionHandler` con pagine 403/404/500 personalizzate
+  per Thymeleaf, `ProblemDetail` (RFC 7807) per le API.
 
 ## Struttura del repository
 ```
 ├── pom.xml                         dipendenze, build del frontend (frontend-maven-plugin)
 ├── mvnw, mvnw.cmd, .mvn/           Maven wrapper
-├── frontend/                       React + Vite (sorgenti in frontend/src)
+├── frontend/                       React + TypeScript + Vite (src/: types, services, context, components, pages, theme)
 └── src/
     ├── main/java/it/uniroma3/siw/festival/   codice Java (package descritti sopra)
     ├── main/resources/
     │   ├── application*.properties           configurazione (profilo dev)
+    │   ├── messages/                          messaggi di validazione e testi (it, en)
     │   ├── templates/                         pagine Thymeleaf
     │   └── static/                            CSS; static/app è generata dalla build di React
     └── test/                                  test e profili test / experiment
